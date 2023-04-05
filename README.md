@@ -4,8 +4,8 @@
 
 ### Студенту предоставляются следующие компоненты системы:
 
-- [Верстка](./sources/layout.zip)
-- [Backend](./md/backend.md)
+- [Верстка](https://github.com/VladaIsakova/js-cp-diploma-edited/blob/main/sources/layout.zip)
+- [Backend](https://github.com/VladaIsakova/js-cp-diploma-edited/blob/main/md/backend.md)
 
 ## Задача
 
@@ -39,7 +39,7 @@ _Билет_  QR-код c уникальным кодом бронировани
 1.  Адаптируйте исходную верстку под планшетные и мобильные устройства.
 Ваша верстка должна корректно отображаться на устройствах с шириной экрана **320px** и более.
 Для быстрой адаптации рекомендуем вам воспользоваться [системой сеток BootStrap](https://getbootstrap.su/docs/5.0/layout/grid/).
-2. Разработка API для взаимодействия с [Backend.](./md/backend.md)
+2. Разработка API для взаимодействия с [Backend.](https://github.com/VladaIsakova/js-cp-diploma-edited/blob/main/md/backend.md)
 3. Программирование гостевой части.
 
 ### Что должно получиться в итоге
