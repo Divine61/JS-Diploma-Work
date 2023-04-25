@@ -2,7 +2,7 @@
 
 // Запрос на получение всех списков
 let xhrUpdate = new XMLHttpRequest();
-xhrUpdate.open(`POST`, `https://f0769682.xsph.ru/`);
+xhrUpdate.open(`POST`, `http://f0769682.xsph.ru/`);
 xhrUpdate.responseType = 'json';
 xhrUpdate.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 xhrUpdate.send(`event=update`);
@@ -100,7 +100,7 @@ function checkFullHall(seance, day) {
   const timeStamp = +chosenDayTimeStamp + +seanceTimeStamp;
   const hallId = seance.closest(`.movie-seances__hall`).dataset.hallId;
   const seanceId = seance.dataset.seanceId;
-  xhrGetHallConfig.open(`POST`, `https://f0769682.xsph.ru/`);
+  xhrGetHallConfig.open(`POST`, `http://f0769682.xsph.ru/`);
   xhrGetHallConfig.responseType = 'json';
   xhrGetHallConfig.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   const openPlaces = [`standart`, `vip`];
