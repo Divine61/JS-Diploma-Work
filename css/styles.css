@@ -411,11 +411,37 @@ body {
   height: 20rem;
 }
 
+/* Моё */
+@media screen and (max-width: 478px) {
+  .movie .movie__info {
+      flex-wrap: wrap;
+    }
+
+  .movie .movie__poster {
+    margin: auto;
+  }
+
+  .movie .movie__poster .movie__poster-image {
+    width: 14.5rem;
+    height: 19.5rem;
+  }
+
+  .movie .movie__poster::after {
+    right: -2.6rem;
+  }
+
+  .movie .movie__data {
+    margin-bottom: 1rem;
+  }
+}
+
+
 @media screen and (min-width: 479px) {
   .page-nav .page-nav__day {
     padding: 1rem 2rem;
   }
 }
+
 @media screen and (min-width: 990px) {
   .page-header, nav, main {
     width: 990px;
