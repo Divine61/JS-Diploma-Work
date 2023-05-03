@@ -1,35 +1,41 @@
 "use strict"
 
-// Запрос на получение всех списков
-let xhrUpdate = new XMLHttpRequest();
-xhrUpdate.open(`POST`, `http://f0769682.xsph.ru/`);
-xhrUpdate.responseType = 'json';
-xhrUpdate.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-xhrUpdate.send(`event=update`);
+// Создать запрос на актуальность заполнения - удалить
+// let xhrGetHallConfig = new XMLHttpRequest();
 
-// Создать запрос на актуальность заполнения
-let xhrGetHallConfig = new XMLHttpRequest();
-
-const now = new Date();
-
-const daysWeek = Array.from(document.querySelectorAll(`.page-nav__day`));
-
-(function () {
+window.addEventListener(`load`, () => {
+  // Запрос на получение всех списков
+  let xhr = {
+    method: 'POST',
+    url: `http://f0769682.xsph.ru/`,
+    responseType: 'json',
+    setRequestHeader: {header: 'Content-type', headerValue:'application/x-www-form-urlencoded'},
+    event: `event=update`,
+  }
+  xhr = createRequest(xhr);
+  // Очистка localStorage
+  clearLocalStorage();
   // Настройка календаря
   setUpDates();
   // Обработка запроса всех списков
-  processingRequest()
-}())
+  processingRequest(xhr);
+})
+
+// Очистка localStorage
+function clearLocalStorage() {
+  localStorage.clear();
+}
 
 // Настойка календарая
 function setUpDates() {
-  const days = [`Вс`, `Пн`, `Вт`, `Ср`, `Чт`, `Пт`, `Сб`, `Вс`, `Пн`, `Вт`, `Ср`, `Чт`, `Пт`, `Сб`];
+  const daysWeek = [`Вс`, `Пн`, `Вт`, `Ср`, `Чт`, `Пт`, `Сб`];
+  const pageNavDays = Array.from(document.querySelectorAll(`.page-nav__day`));
   // Дни недели
-  showCurrentWeek(days);
+  showCurrentWeek(daysWeek, pageNavDays);
   // Открытая стартовая вкладка текущего дня
-  chooseDay(daysWeek[0]);
+  chooseDay(pageNavDays[0], pageNavDays);
   // Раздача кнопок выбора дня
-  btnChooseDay(days);
+  btnChooseDay(pageNavDays);
 }
 
 // Поиск из колекции по имени
@@ -43,45 +49,50 @@ function searchItemNode(nodeCollection, property, comparable) {
 }
 
 // Дни недели
-function showCurrentWeek(days) {
-  daysWeek.forEach((day, index) => {
+function showCurrentWeek(daysWeek, pageNavDays) {
+  const now = new Date();
+  pageNavDays.forEach((day, index) => {
+    const fromMidnight = (now.getHours() * 3600000) + (now.getMinutes() * 60000) + (now.getSeconds() * 1000) + now.getMilliseconds();
+    let timeUTCms = +now + (index * 86400000) - fromMidnight;
+    let timeUTC = new Date(timeUTCms);
     // Установка дней недели
-    setDaysWeek(days, day, index);
+    setDaysWeek(daysWeek, day, timeUTC);
     // Установка чисел месяца
-    setDateMonth(day, index);
+    setDateMonth(day, timeUTCms, timeUTC);
   })
 }
 
 // Установка дней недели
-function setDaysWeek(days, day, index) {
-  day.querySelector(`.page-nav__day-week`).textContent = days[now.getDay() + index];
+function setDaysWeek(daysWeek, day, timeUTC) {
+  day.querySelector(`.page-nav__day-week`).textContent = daysWeek[timeUTC.getDay()];
   if (day.querySelector(`.page-nav__day-week`).textContent === `Сб` || day.querySelector(`.page-nav__day-week`).textContent === `Вс`) {
     day.classList.add(`page-nav__day_weekend`);
   }
 }
 
 // Установка чисел месяца
-function setDateMonth(day, index) {
-  day.dataset.dayTimeStamp = (now.getDate() * 86400 - 86400) + (86400 * index);
-  day.querySelector(`.page-nav__day-number`).textContent = now.getDate() + index;
+function setDateMonth(day, timeUTCms, timeUTC) {
+  day.dataset.dayTimeStamp = Math.round(timeUTCms / 1000);
+  day.querySelector(`.page-nav__day-number`).textContent = timeUTC.getDate();
 }
 
 // Раздача кнопок выбора дня
-function btnChooseDay() {
-  daysWeek.forEach(day => {
+function btnChooseDay(pageNavDays) {
+  pageNavDays.forEach(day => {
     day.addEventListener(`click`, elem => {
       elem.preventDefault();
-      chooseDay(day);
+      // Открытая стартовая вкладка текущего дня + выбор дня
+      chooseDay(day, pageNavDays);
     })
   })
 }
 
 // Открытая стартовая вкладка текущего дня + выбор дня
-function chooseDay(day) {
-  const selectedDay = searchPosition(daysWeek, `page-nav__day_chosen`);
-  daysWeek[selectedDay].classList.remove(`page-nav__day_chosen`);
+function chooseDay(day, pageNavDays) {
+  const selectedDay = searchPosition(pageNavDays, `page-nav__day_chosen`);
+  pageNavDays[selectedDay].classList.remove(`page-nav__day_chosen`);
   day.classList.add(`page-nav__day_chosen`);
-  // Проверка на полную заполненность на сеансе - не работает!
+  // Проверка на полную заполненность на сеансе - не работает! - удалить
   // setTimeout(() => {
   //   const seancesList = document.querySelectorAll(`.movie-seances__time`);
   //   seancesList.forEach(seance => {
@@ -93,46 +104,46 @@ function chooseDay(day) {
   // }, 1000);
 }
 
-// Проверка на полную заполненность на сеансе - не работает!
-function checkFullHall(seance, day) {
-  const chosenDayTimeStamp = day.dataset.dayTimeStamp;
-  const seanceTimeStamp = (+(seance.textContent).slice(0, 2) * 3600) + (+(seance.textContent).slice(3, 5) * 60);
-  const timeStamp = +chosenDayTimeStamp + +seanceTimeStamp;
-  const hallId = seance.closest(`.movie-seances__hall`).dataset.hallId;
-  const seanceId = seance.dataset.seanceId;
-  xhrGetHallConfig.open(`POST`, `http://f0769682.xsph.ru/`);
-  xhrGetHallConfig.responseType = 'json';
-  xhrGetHallConfig.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  const openPlaces = [`standart`, `vip`];
-  xhrGetHallConfig.send(`event=get_hallConfig&timestamp=${timeStamp}&hallId=${hallId}&seanceId=${seanceId}`);
-  alert(timeStamp)
-  // ошибка
-  xhrGetHallConfig.onload = () => {
-    alert(`xhl.onload`)
-    if (xhrGetHallConfig.response !== null) {
-      alert(timeStamp + ` xhl.response`)
-      if (!xhrGetHallConfig.response.includes(openPlaces[0]) || !xhrGetHallConfig.response.includes(openPlaces[0])) {
-        alert(xhrGetHallConfig.response.includes(openPlaces[0]))
-        return `background-color: #808080`
-      }
-      alert(xhrGetHallConfig.response + `exit`)
-    }
-  }
-}
+// Проверка на полную заполненность на сеансе - не работает! - удалить
+// function checkFullHall(seance, day) {
+//   const chosenDayTimeStamp = day.dataset.dayTimeStamp;
+//   const seanceTimeStamp = (+(seance.textContent).slice(0, 2) * 3600) + (+(seance.textContent).slice(3, 5) * 60);
+//   const timeStamp = +chosenDayTimeStamp + +seanceTimeStamp;
+//   const hallId = seance.closest(`.movie-seances__hall`).dataset.hallId;
+//   const seanceId = seance.dataset.seanceId;
+//   xhrGetHallConfig.open(`POST`, `http://f0769682.xsph.ru/`);
+//   xhrGetHallConfig.responseType = 'json';
+//   xhrGetHallConfig.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+//   const openPlaces = [`standart`, `vip`];
+//   xhrGetHallConfig.send(`event=get_hallConfig&timestamp=${timeStamp}&hallId=${hallId}&seanceId=${seanceId}`);
+//   alert(timeStamp)
+//   // ошибка
+//   xhrGetHallConfig.onload = () => {
+//     alert(`xhl.onload`)
+//     if (xhrGetHallConfig.response !== null) {
+//       alert(timeStamp + ` xhl.response`)
+//       if (!xhrGetHallConfig.response.includes(openPlaces[0]) || !xhrGetHallConfig.response.includes(openPlaces[0])) {
+//         alert(xhrGetHallConfig.response.includes(openPlaces[0]))
+//         return `background-color: #808080`
+//       }
+//       alert(xhrGetHallConfig.response + `exit`)
+//     }
+//   }
+// }
 
-// Закрыть сеанс
-function closesSeance(seance, attribute) {
-  seance.dataset.style = attribute;
-  alert(seance.dataset.style)
-  seance.removeAttribute("href");
-}
+// Закрыть сеанс - удалить
+// function closesSeance(seance, attribute) {
+//   seance.dataset.style = attribute;
+//   alert(seance.dataset.style)
+//   seance.removeAttribute("href");
+// }
 
 // Обработка запроса всех списков
-function processingRequest() {
-  xhrUpdate.onload = () => {
-    const requestFilms = xhrUpdate.response.films.result;
-    const requestHalls = xhrUpdate.response.halls.result;
-    const requestSeances = xhrUpdate.response.seances.result;
+function processingRequest(xhr) {
+  xhr.onload = () => {
+    const requestFilms = xhr.response.films.result;
+    const requestHalls = xhr.response.halls.result;
+    const requestSeances = xhr.response.seances.result;
     // Показ всех карточек с фильмами из запроса
     showFilms(requestFilms);
     // Показ всех сеансов в соответствующих залах
@@ -146,10 +157,16 @@ function processingRequest() {
 function showFilms(requestFilms) {
   const requestFilmsLength = Object.keys(requestFilms).length;
   const movieCard = document.querySelector(`.movie`);
-  // Изменение карточки с фильмом под текущий фильм
-  changeMovie(movieCard, 0, requestFilms);
-  // Создание новой карточки с фильмами
-  creatMovie(requestFilms, requestFilmsLength, movieCard);
+  // Удаление карточки-шаблона с фильмом если в прокате ничего нет
+  if (requestFilmsLength === 0) {
+    movieCard.remove();
+    return
+  } else {
+    // Изменение карточки с фильмом под текущий фильм
+    changeMovie(movieCard, 0, requestFilms);
+    // Создание новой карточки с фильмами
+    creatMovie(requestFilms, requestFilmsLength, movieCard);
+  }
 }
 
 // Создание новой карточки с фильмами
@@ -193,14 +210,15 @@ function showSeances(requestFilms, requestHalls, requestSeances) {
     seancesCurrentFilms.forEach((seance, index) => {
       (isHall(seance, openHalls) || seancesCurrentFilms.splice(index, 1));
     })
-    // Вывести сообщение "Нет сеансов", если список сеансов пуст или они идут в закрытых залах
-    if (clearSeances(movieList[i], seancesCurrentFilms)) {
+    // Удалить карточку с фильмом если нет сеансов
+    if (isSeances(movieList[i], seancesCurrentFilms)) {
       return
+    } else {
+      // Подсчет количества залов с прокатом текущего фильма
+      const countHall = checkCountHalls(seancesCurrentFilms);
+      // Наполнение залами и сеансами в карточке с фильмом
+      creatHallsAndSeances(openHalls, movieList[i], seancesCurrentFilms, countHall);
     }
-    // Подсчет количества залов с прокатом текущего фильма
-    const countHall = checkCountHalls(seancesCurrentFilms);
-    // Наполнение залами и сеансами в карточке с фильмом
-    creatHallsAndSeances(openHalls, movieList[i], seancesCurrentFilms, countHall);
   }
 }
 
@@ -216,14 +234,10 @@ function isHall(seance, openHalls) {
   return seanceOpen;
 }
 
-// Вывести сообщение "Нет сеансов", если список сеансов пуст или они идут в закрытых залах
-function clearSeances(movieCard, seances) {
+// Удалить карточку с фильмом если нет сеансов
+function isSeances(movieCard, seances) {
   if (seances.length === 0) {
-    const cloneMovieHall =  movieCard.querySelector(`.movie-seances__hall`).cloneNode();
-    const cloneHallTitle = movieCard.querySelector(`.movie-seances__hall-title`).cloneNode();
-    cloneHallTitle.textContent = `Сеансов нет`;
-    movieCard.querySelector(`.movie-seances__hall`).replaceWith(cloneMovieHall);
-    movieCard.querySelector(`.movie-seances__hall`).appendChild(cloneHallTitle);
+    movieCard.remove();
     return true
   }
 }
@@ -244,7 +258,7 @@ function creatHallsAndSeances(openHalls, movieCard, seances, countHall) {
       const hallId = Object.keys(countHall[0])[index];
       // Добавить data данные об зале
       addMetaHall(openHalls, hall, hallId);
-      // Увеличеть количество сеансов где больше 1го зала
+      // Увеличить количество сеансов где больше 1го зала
       creatSeances(seances, countHall[0], hallId, hall);
       for (let i = index; i < countHall[1]; i++) {
         // Поиск из колекции по условию
@@ -279,13 +293,14 @@ function creatHalls(movieCard, hallListLength) {
 function addMetaHall(openHalls, hall, hallId) {
   const metaDataHall = openHalls.find(hall => hall.hall_id == hallId);
   hall.dataset.hallId = metaDataHall.hall_id;
+  hall.dataset.hallName = metaDataHall.hall_name;
   hall.dataset.priceStandart = metaDataHall.hall_price_standart;
   hall.dataset.priseVip = metaDataHall.hall_price_vip;
 }
 
-// Увеличеть количество сеансов где больше 1го зала
+// Увеличить количество сеансов где больше 1го зала
 function creatSeances(seances, countHalls, seancesHall, hall) {
-  for (let i = 0; i < seances.length; i++) {
+  for (let i = 1; i < seances.length; i++) {
     if (seances[i].seance_hallid == seancesHall && countHalls[seancesHall] > 1) {
       const cloneSeanceBlock = hall.querySelector(`.movie-seances__time-block`).cloneNode(true);
       hall.querySelector(`.movie-seances__list`).appendChild(cloneSeanceBlock);
@@ -302,31 +317,27 @@ function creatSeancesOnlyHall(movieCard, seances) {
 }
 
 // Изменение информации об сеансах к данному залу 
-function changeSeance(hall, seancesCurrentFilms) {
-  const seancesList = hall.querySelectorAll(`.movie-seances__time`);
-  seancesList.forEach((seance, index) => {
-    const seanceTime = seancesCurrentFilms[index].seance_time;
-    seance.textContent = seanceTime;
-    seance.dataset.seanceId = seancesCurrentFilms[index].seance_id;
-    // Проверка на полную заполненность на сеансе - не работает!
-    // const closesSeance = checkFullHall(seancesList[index]);
-    // Закрыть сеанс
-    // closesSeance ? closeSeance(seancesList[index], closeSeance) : false;
-  })
-}
-
-// Изменение информации об сеансах к данному залу - добавляем каждому сеансу data атрибуты
 // function changeSeance(hall, seancesCurrentFilms) {
 //   const seancesList = hall.querySelectorAll(`.movie-seances__time`);
 //   seancesList.forEach((seance, index) => {
 //     const seanceTime = seancesCurrentFilms[index].seance_time;
 //     seance.textContent = seanceTime;
 //     seance.dataset.seanceId = seancesCurrentFilms[index].seance_id;
-//     seance.dataset.seanceStart = seancesCurrentFilms[index].seance_start;
-//     seance.dataset.seanceTime = seanceTime;
-//     seance.dataset.seanceTimeStamp = (+seanceTime.slice(0, 2) * 3600) + (+seanceTime.slice(3, 5) * 60);
 //   })
 // }
+
+// Изменение информации об сеансах к данному залу - добавляем каждому сеансу data атрибуты
+function changeSeance(hall, seancesCurrentFilms) {
+  const seancesList = hall.querySelectorAll(`.movie-seances__time`);
+  seancesList.forEach((seance, index) => {
+    const seanceTime = seancesCurrentFilms[index].seance_time;
+    seance.textContent = seanceTime;
+    seance.dataset.seanceId = seancesCurrentFilms[index].seance_id;
+    seance.dataset.seanceStart = seancesCurrentFilms[index].seance_start;
+    seance.dataset.seanceTime = seanceTime;
+    seance.dataset.seanceTimeStamp = (+seanceTime.slice(0, 2) * 3600) + (+seanceTime.slice(3, 5) * 60);
+  })
+}
 
 // Раздача кнопок всем сеансам
 function btnSeances(requestHalls, requestSeances) {
@@ -335,61 +346,65 @@ function btnSeances(requestHalls, requestSeances) {
     seance.addEventListener(`click`, event => {
       event.preventDefault();
       // Создание мета данных о сеансе для веб-хранилища
-      creatMetaData(requestHalls, requestSeances, seance);
+      // creatMetaData(requestHalls, requestSeances, seance);
       // Создание мета данных о сеансе для веб-хранилища - способ получения мета данных из data атрибутов
-      // creatMetaData(requestHalls, seance);
+      creatMetaData(requestHalls, seance);
       // Не забыть вкл. переход по ссылке
       setTimeout(() => window.location = seance.href, 0)
     });
   })
 }
 
-// Создание мета данных о сеансе для веб-хранилища
-function creatMetaData(requestHalls, requestSeances, seance) {
-  // Поиск из колекции по условию
-  const currentSeance = searchItemNode(requestSeances, `seance_id`, seance.dataset.seanceId);
+// Создание мета данных о сеансе для веб-хранилища - способ получения мета данных из data атрибутов
+function creatMetaData(requestHalls, seance) {
   const movieTitle = seance.closest(`.movie`).querySelector(`.movie__title`).textContent;
   const hall = seance.closest(`.movie-seances__hall`);
   const hallId = hall.dataset.hallId;
+  const seanceId = seance.dataset.seanceId;
+  const chosenDayTimeStamp = document.querySelector(`.page-nav__day_chosen`).dataset.dayTimeStamp;
+  const hallName = hall.dataset.hallName.replace(/\D/g, "");
+  const hallTitle = hall.querySelector(`.movie-seances__hall-title`).textContent;
   // Поиск из колекции по условию
   const currentHall = searchItemNode(requestHalls, `hall_id`, hallId);
-  const chosenDayTimeStamp = document.querySelector(`.page-nav__day_chosen`).dataset.dayTimeStamp;
-  const seanceTime = currentSeance[0].seance_time;
-  const seanceTimeStamp = (+seanceTime.slice(0, 2) * 3600) + (+seanceTime.slice(3, 5) * 60);
-  const seanceId = seance.dataset.seanceId;
-  const hallTitle = hall.querySelector(`.movie-seances__hall-title`).textContent;
   const seanceMetaData = {
     movieTitle: movieTitle,
     hallId: hallId,
     seanceId: seanceId,
     hallConfig: currentHall[0].hall_config,
-    seanceTime: seanceTime,
-    seanceTimeStamp: +chosenDayTimeStamp + +seanceTimeStamp,
+    seanceTime: seance.dataset.seanceTime,
+    seanceTimeStamp: +chosenDayTimeStamp + +seance.dataset.seanceTimeStamp,
+    hallName: hallName,
     hallTitle: hallTitle,
-    priceStandart: currentHall[0].hall_price_standart,
-    priseVip: currentHall[0].hall_price_vip,
+    priceStandart: hall.dataset.priceStandart,
+    priseVip: hall.dataset.priseVip,
   };
-  localStorage.setItem(`seanceMeta`, JSON.stringify(seanceMetaData));
+  localStorage.setItem(`seanceMeta`, JSON.stringify(seanceMetaData))
 }
 
-// Создание мета данных о сеансе для веб-хранилища - способ получения мета данных из data атрибутов
-// function creatMetaData(requestHalls, seance) {
+// Создание мета данных о сеансе для веб-хранилища
+// function creatMetaData(requestHalls, requestSeances, seance) {
+//   // Поиск из колекции по условию
+//   const currentSeance = searchItemNode(requestSeances, `seance_id`, seance.dataset.seanceId);
 //   const movieTitle = seance.closest(`.movie`).querySelector(`.movie__title`).textContent;
 //   const hall = seance.closest(`.movie-seances__hall`);
 //   const hallId = hall.dataset.hallId;
-//   const chosenDayTimeStamp = document.querySelector(`.page-nav__day_chosen`).dataset.dayTimeStamp;
-//   const hallTitle = hall.querySelector(`.movie-seances__hall-title`).textContent;
 //   // Поиск из колекции по условию
 //   const currentHall = searchItemNode(requestHalls, `hall_id`, hallId);
+//   const chosenDayTimeStamp = document.querySelector(`.page-nav__day_chosen`).dataset.dayTimeStamp;
+//   const seanceTime = currentSeance[0].seance_time;
+//   const seanceTimeStamp = (+seanceTime.slice(0, 2) * 3600) + (+seanceTime.slice(3, 5) * 60);
+//   const seanceId = seance.dataset.seanceId;
+//   const hallTitle = hall.querySelector(`.movie-seances__hall-title`).textContent;
 //   const seanceMetaData = {
 //     movieTitle: movieTitle,
 //     hallId: hallId,
+//     seanceId: seanceId,
 //     hallConfig: currentHall[0].hall_config,
-//     seanceTime: seance.dataset.seanceTime,
-//     seanceTimeStamp: +chosenDayTimeStamp + +seance.dataset.seanceTimeStamp,
+//     seanceTime: seanceTime,
+//     seanceTimeStamp: +chosenDayTimeStamp + +seanceTimeStamp,
 //     hallTitle: hallTitle,
-//     priceStandart: hall.dataset.priceStandart,
-//     priseVip: hall.dataset.priseVip,
+//     priceStandart: currentHall[0].hall_price_standart,
+//     priseVip: currentHall[0].hall_price_vip,
 //   };
-//   localStorage.setItem(`seanceMeta`, JSON.stringify(seanceMetaData))
+//   localStorage.setItem(`seanceMeta`, JSON.stringify(seanceMetaData));
 // }

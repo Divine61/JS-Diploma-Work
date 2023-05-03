@@ -1,24 +1,29 @@
 "use strict"
 
 const metaDataHall = JSON.parse(localStorage.getItem(`seanceMeta`));
-const buying = document.querySelector(`.buying`);
+let buying;
 
-let xhr = new XMLHttpRequest();
-xhr.open(`POST`, `http://f0769682.xsph.ru/`);
-xhr.responseType = 'json';
-xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-xhr.send(`event=get_hallConfig&timestamp=${metaDataHall.seanceTimeStamp}&hallId=${metaDataHall.hallId}&seanceId=${metaDataHall.seanceId}`);
-
-xhr.onload = () => {
-  const requestHallConfig = xhr.response;
-  // Проверка на заполненность зала
-  checkTickets(requestHallConfig);
-  // Вывести всю информацию по сеансу
-  showHall();
-  // Создать кнопку покупки билетов
-  btnBuying();
-}
+window.addEventListener(`load`, () => {
+  buying = document.querySelector(`.buying`);
+  let xhr = {
+  method: 'POST',
+  url: `http://f0769682.xsph.ru/`,
+  responseType: 'json',
+  setRequestHeader: {header: 'Content-type', headerValue:'application/x-www-form-urlencoded'},
+  event: `event=get_hallConfig&timestamp=${metaDataHall.seanceTimeStamp}&hallId=${metaDataHall.hallId}&seanceId=${metaDataHall.seanceId}`,
+  }
+  // Запрос актуальной конфигурации мест
+  xhr = createRequest(xhr);
+  xhr.onload = () => {
+    const requestHallConfig = xhr.response;
+    // Проверка на заполненность зала
+    checkTickets(requestHallConfig);
+    // Вывести всю информацию по сеансу
+    showHall();
+    // Создать кнопку покупки билетов
+    btnBuying();
+  }
+})
 
 // Проверка на заполненность зала
 function checkTickets(requestHallConfig) {
@@ -69,7 +74,7 @@ function modificationSeats() {
   const totalPrice = buying.querySelector(`.col:last-child .conf-step__legend-price:last-child`);
   // Проверка на свободное место
   selectSeat(this);
-  // totalPrice.insertAdjacentText(`beforeend`, ` 100 руб`);
+  // totalPrice.insertAdjacentText(`beforeend`, ` 100 руб`); - придумать над выводом общей суммы, по своему усмотреннию
 }
 
 // Проверка на свободное место
@@ -101,8 +106,6 @@ function formationBooking() {
   const hallConfig = creatHallConfig();
   // Создание мета данных выбранных билетов для веб-хранилища
   creatMetaData(hallConfig, rowAndSeat, price);
-  // Отправка забронированных билетов на сервер
-  // sendBooking();
   // Не забыть вкл. переход по ссылке
   window.location = `payment.html`;
 }
@@ -141,14 +144,6 @@ function creatHallConfig() {
   return buying.querySelector(`.conf-step__wrapper`).innerHTML;
 }
 
-// Отправка забронированных билетов на сервер
-// function sendBooking() {
-//   let xhr = new XMLHttpRequest();
-//   xhr.open(`POST`, `http://f0769682.xsph.ru/`);
-//   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-//   xhr.send(`event=sale_add&timestamp=${seanceTimeStamp}&hallId=${hallId}&seanceId=${seanceId}&hallConfiguration=${hallConfig}`);
-// }
-
 // Создание мета данных выбранных билетов для веб-хранилища
 function creatMetaData(hallConfig, rowAndSeat, price) {
   const buyingMetaData = {
@@ -159,7 +154,7 @@ function creatMetaData(hallConfig, rowAndSeat, price) {
     hallConfig: hallConfig,
     seanceTime: metaDataHall.seanceTime,
     seanceTimeStamp: metaDataHall.seanceTimeStamp,
-    hallTitle: (metaDataHall.hallTitle).replace(/\D/g, ""),
+    hallName: metaDataHall.hallName,
     price: price,
   };
   localStorage.setItem(`buyingMeta`, JSON.stringify(buyingMetaData));

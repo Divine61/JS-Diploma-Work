@@ -118,7 +118,7 @@ body {
   content: '';
   display: block;
   position: absolute;
-  right: -0.7rem;
+  right: -0.6rem;
   top: -3rem;
   border: 1.5rem solid transparent;
   border-bottom: 0 solid transparent;
@@ -412,6 +412,16 @@ body {
 }
 
 /* Моё */
+@media screen and (max-width: 1026px) {
+  .page-header, nav, main {
+    padding: 0 18px;
+  }
+
+  .movie .movie__poster::after {
+    right: -0.7rem;
+  }
+}
+
 @media screen and (max-width: 478px) {
   .movie .movie__info {
       flex-wrap: wrap;
@@ -427,7 +437,7 @@ body {
   }
 
   .movie .movie__poster::after {
-    right: -2.6rem;
+    right: -2.7rem;
   }
 
   .movie .movie__data {
@@ -450,10 +460,6 @@ body {
 
   .movie, .buying {
     border-radius: 2px;
-  }
-
-  .buying__info-hint {
-    display: none;
   }
 }
 
