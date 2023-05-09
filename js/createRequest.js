@@ -7,6 +7,12 @@ function createRequest(request) {
     xhr.responseType = request.responseType;
   }
   xhr.setRequestHeader(request.setRequestHeader.header, request.setRequestHeader.headerValue);
+  // try {
+  //   xhr.send(request.event);
+  // } catch (error) {
+  //   const err = new Error('Request Error');
+  //   return err
+  // }
   xhr.send(request.event);
   return xhr
 }

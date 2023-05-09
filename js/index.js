@@ -13,6 +13,11 @@ window.addEventListener(`load`, () => {
     event: `event=update`,
   }
   xhr = createRequest(xhr);
+  // Удаление карточки-шаблона с фильмом если ошибка в запросе
+  // if (xhr == undefined) {
+  //   const movieCard = document.querySelector(`.movie`);
+  //   movieCard.remove();
+  // }
   // Очистка localStorage
   clearLocalStorage();
   // Настройка календаря
@@ -204,9 +209,9 @@ function showSeances(requestFilms, requestHalls, requestSeances) {
     const currentFilmId = requestFilms[i].film_id;
     // Поиск из колекции по условию
     const seancesCurrentFilms = searchItemNode(requestSeances, `seance_filmid`, currentFilmId);
-    // Проверка совпадений списков открытых залов с залами проката текущего фильма - Почему если зал 71 закрыт 
-    // (в проверке isHall дописать после &&),
-    // то для 1го фильма 2ой сеанс (64) не обрабатывается?
+    // Проверка совпадений списков открытых залов с залами проката текущего фильма - Почему если открыт только зал 71 id 
+    // (в проверке isHall дописать после && == 71),
+    // то для 1го фильма последний сеанс (64) не обрабатывается?
     seancesCurrentFilms.forEach((seance, index) => {
       (isHall(seance, openHalls) || seancesCurrentFilms.splice(index, 1));
     })

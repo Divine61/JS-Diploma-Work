@@ -16,7 +16,7 @@ function showTicket() {
   // Показать QR - не работает
   showQR();
   // Очистка localStorage
-  clearLocalStorage();
+  // clearLocalStorage();
 }
 
 // Изменить информацию по брони
@@ -29,16 +29,15 @@ function changeInfoBuying() {
 
 // Показать QR - не работает
 function showQR() {
-  const qrcode = QRCreator(metaDataBuying.qrMeta, {});
+  const qrcode = QRCreator(metaDataBuying.qrMeta, {image: 'SVG'});
   
   const content = (qrcode => {
     return qrcode.error ?
       `недопустимые исходные данные ${qrcode.error}` :
        qrcode.result;
-      //  qrcode.image;
   });
 
-  ticketWrapper.querySelector(`.ticket__info-qr`).src = content(qrcode);
+  ticketWrapper.querySelector(`.ticket__info-qr`).appendChild(content(qrcode));
 }
 
 // Очистка localStorage
