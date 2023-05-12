@@ -7,7 +7,8 @@ window.addEventListener(`load`, () => {
   buying = document.querySelector(`.buying`);
   let xhr = {
   method: 'POST',
-  url: `http://f0769682.xsph.ru/`,
+  // url: `http://f0769682.xsph.ru/`,
+  url: `https://jscp-diplom.netoserver.ru/`,
   responseType: 'json',
   setRequestHeader: {header: 'Content-type', headerValue:'application/x-www-form-urlencoded'},
   event: `event=get_hallConfig&timestamp=${metaDataHall.seanceTimeStamp}&hallId=${metaDataHall.hallId}&seanceId=${metaDataHall.seanceId}`,

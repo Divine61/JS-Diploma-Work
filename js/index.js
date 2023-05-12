@@ -7,9 +7,12 @@ window.addEventListener(`load`, () => {
   // Запрос на получение всех списков
   let xhr = {
     method: 'POST',
-    url: `http://f0769682.xsph.ru/`,
+    // url: `http://f0769682.xsph.ru/`,
+    // url: `https://jscp-diplom.tw1.ru/`,
+    url: `https://jscp-diplom.netoserver.ru/`,
     responseType: 'json',
     setRequestHeader: {header: 'Content-type', headerValue:'application/x-www-form-urlencoded'},
+    // setRequestHeader: {header: 'Content-type', headerValue:'text/html; charset=UTF-8'},
     event: `event=update`,
   }
   xhr = createRequest(xhr);

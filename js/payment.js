@@ -44,7 +44,8 @@ function btnBuying() {
 function sendBooking() {
   const xhr = {
     method: 'POST',
-    url: `http://f0769682.xsph.ru/`,
+    // url: `http://f0769682.xsph.ru/`,
+    url: `https://jscp-diplom.netoserver.ru/`,
     setRequestHeader: {header: 'Content-type', headerValue:'application/x-www-form-urlencoded'},
     event: `event=sale_add&timestamp=${metaDataBuying.seanceTimeStamp}&hallId=${metaDataBuying.hallId}&seanceId=${metaDataBuying.seanceId}&hallConfiguration=${metaDataBuying.hallConfig}`,
   }
