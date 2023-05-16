@@ -13,10 +13,8 @@ window.addEventListener(`load`, () => {
 function showTicket() {
   // Изменить информацию по брони
   changeInfoBuying();
-  // Показать QR - не работает
+  // Показать QR
   showQR();
-  // Очистка localStorage
-  // clearLocalStorage();
 }
 
 // Изменить информацию по брони
@@ -27,7 +25,7 @@ function changeInfoBuying() {
   ticketWrapper.querySelector(`.ticket__start`).textContent = metaDataBuying.seanceTime;
 }
 
-// Показать QR - не работает
+// Показать QR
 function showQR() {
   const qrcode = QRCreator(metaDataBuying.qrMeta, {image: 'SVG'});
   
@@ -38,9 +36,4 @@ function showQR() {
   });
 
   ticketWrapper.querySelector(`.ticket__info-qr`).appendChild(content(qrcode));
-}
-
-// Очистка localStorage
-function clearLocalStorage() {
-  localStorage.clear();
 }

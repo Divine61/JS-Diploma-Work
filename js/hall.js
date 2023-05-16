@@ -7,7 +7,6 @@ window.addEventListener(`load`, () => {
   buying = document.querySelector(`.buying`);
   let xhr = {
   method: 'POST',
-  // url: `http://f0769682.xsph.ru/`,
   url: `https://jscp-diplom.netoserver.ru/`,
   responseType: 'json',
   setRequestHeader: {header: 'Content-type', headerValue:'application/x-www-form-urlencoded'},
@@ -66,16 +65,10 @@ function btnSelected() {
   const confStepChairs = buying.querySelectorAll(`.conf-step__chair`);
   confStepChairs.forEach(chair => {
     // Выбор места
-    chair.addEventListener(`click`, modificationSeats);
+    chair.addEventListener(`click`, () => {
+      selectSeat(chair);
+    });
   })
-}
-
-// Выбор места
-function modificationSeats() {
-  const totalPrice = buying.querySelector(`.col:last-child .conf-step__legend-price:last-child`);
-  // Проверка на свободное место
-  selectSeat(this);
-  // totalPrice.insertAdjacentText(`beforeend`, ` 100 руб`); - придумать над выводом общей суммы, по своему усмотреннию
 }
 
 // Проверка на свободное место
@@ -107,7 +100,6 @@ function formationBooking() {
   const hallConfig = creatHallConfig();
   // Создание мета данных выбранных билетов для веб-хранилища
   creatMetaData(hallConfig, rowAndSeat, price);
-  // Не забыть вкл. переход по ссылке
   window.location = `payment.html`;
 }
 

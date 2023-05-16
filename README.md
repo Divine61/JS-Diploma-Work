@@ -8,6 +8,8 @@
 В качестве **API** взаимодействия с *Backend* использовалось **XMLHttpRequest**.
 Для генерации **QR-кода** использовался сторонний скрипт с открытым кодом [QRCreator.js](https://github.com/slesareva-gala/QR-Code).
 
+Ссылка на [проект](https://divine61.github.io/JS-Diploma-Work/), опубликованный на githubPage
+
 ### Студенту предоставляются следующие компоненты системы:
 
 - [Верстка](https://github.com/VladaIsakova/js-cp-diploma-edited/blob/main/sources/layout.zip)
